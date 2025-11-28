@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My To-Do List</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #eef1f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .todo-container {
+      background: white;
+      width: 420px;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .input-area {
+      display: none;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #firstAddBtn {
+      display: inline-block;
+      background: #007bff;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      margin-top: 10px;
+    }
+
+    #firstAddBtn:hover {
+      background: #0056b3;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    li {
+      background: #f8f9fa;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.3s;
+    }
+
+    li.completed {
+      text-decoration: line-through;
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .delete-btn {
+      background: crimson;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    .delete-btn:hover {
+      background: darkred;
+    }
+
+    .bottom-bar {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    #clearAllBtn {
+      background: #dc3545;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #clearAllBtn:hover {
+      background: #b02a37;
+    }
+  </style>
+</head>
+<body>
+  <div class="todo-container">
+    <h1>To-Do List</h1>
+
+    <button id="firstAddBtn">Add Task</button>
+
+    <div class="input-area" id="inputArea">
+      <input type="text" id="taskInput" placeholder="Add a new task...">
+      <button id="addBtn">Add</button>
+    </div>
+
+    <ul id="taskList"></ul>
+
+    <div class="bottom-bar" id="bottomBar">
+      <span id="taskCount">0 tasks left</span>
+      <button id="clearAllBtn">Clear All</button>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById("taskInput");
+    const list = document.getElementById("taskList");
+    const addBtn = document.getElementById("addBtn");
+    const firstAddBtn = document.getElementById("firstAddBtn");
+    const inputArea = document.getElementById("inputArea");
+    const bottomBar = document.getElementById("bottomBar");
+    const clearAllBtn = document.getElementById("clearAllBtn");
+    const taskCount = document.getElementById("taskCount");
+
+    document.addEventListener("DOMContentLoaded", renderTasks);
+    addBtn.addEventListener("click", addTask);
+    clearAllBtn.addEventListener("click", clearAllTasks);
+    firstAddBtn.addEventListener("click", showInputArea);
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") addTask();
+    });
+
+    function getTasks() {
+      const tasks = localStorage.getItem("tasks");
+      return tasks ? JSON.parse(tasks) : [];
+    }
+
+    function saveTasks(tasks) {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function showInputArea() {
+      firstAddBtn.style.display = "none";
+      inputArea.style.display = "flex";
+      bottomBar.style.display = "flex";
+      input.focus();
+    }
+
+    function addTask() {
+      const taskText = input.value.trim();
+      if (taskText === "") {
+        alert("Please enter a task!");
+        return;
+      }
+      const tasks = getTasks();
+      tasks.push({ text: taskText, completed: false });
+      saveTasks(tasks);
+      input.value = "";
+      renderTasks();
+    }
+
+    function toggleComplete(index) {
+      const tasks = getTasks();
+      tasks[index].completed = !tasks[index].completed;
+      saveTasks(tasks);
+      renderTasks();
+    }
+
+    function deleteTask(index) {
+      const tasks = getTasks();
+      tasks.splice(index, 1);
+      saveTasks(tasks);
+      renderTasks();
+    }
+
+    function clearAllTasks() {
+      if (confirm("Are you sure you want to clear all tasks?")) {
+        localStorage.removeItem("tasks");
+        renderTasks();
+      }
+    }
+
+    function renderTasks() {
+      list.innerHTML = "";
+      const tasks = getTasks();
+
+      if (tasks.length === 0) {
+        inputArea.style.display = "none";
+        bottomBar.style.display = "none";
+        firstAddBtn.style.display = "inline-block";
+      } else {
+        inputArea.style.display = "flex";
+        bottomBar.style.display = "flex";
+        firstAddBtn.style.display = "none";
+      }
+
+      tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+        li.textContent = task.text;
+        if (task.completed) li.classList.add("completed");
+        li.addEventListener("click", () => toggleComplete(index));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.classList.add("delete-btn");
+        deleteBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          deleteTask(index);
+        });
+
+        li.appendChild(deleteBtn);
+        list.appendChild(li);
+      });
+      updateTaskCount(tasks);
+    }
+
+    function updateTaskCount(tasks) {
+      const remaining = tasks.filter((t) => !t.completed).length;
+      taskCount.textContent =
+        remaining === 1 ? "1 task left" : `${remaining} tasks left`;
+    }
+  </script>
+</body>
+</html>
